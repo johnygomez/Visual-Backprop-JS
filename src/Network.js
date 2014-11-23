@@ -11,7 +11,6 @@ var Network = function() {
   this.network = [];
   this.network_ = [];
   this.outputs = [];
-  this.currentError = 0;
   var self = this;
 
   //////////////////////////////
@@ -20,7 +19,6 @@ var Network = function() {
     var neuron = new Neuron();
     neuron.id = id;
     this.network_.push(neuron);
-    this.init_();
     return neuron;
   };
   this.removeNeuron = function(id) {
@@ -34,7 +32,6 @@ var Network = function() {
         return true;
       }
     });
-    this.init_();
   };
   this.getNeuron = function(id) {
     var filtered = this.network_.filter(function(neuron) {
@@ -68,9 +65,8 @@ var Network = function() {
         return true;
       }
     })
-    this.init_();
   };
-  this.connect = function(from, to, weight) {
+  this.connect = function(from, to) {
     if (typeof(from) === 'number') {
       from = this.getNeuron(from);
     }
@@ -78,13 +74,9 @@ var Network = function() {
       to = this.getNeuron(to);
     }
     var c = new Connection(from, to);
-    if (typeof(weight) !== 'undefined' && weight !== null) {
-      c.weight = weight;
-    }
     this.connections.push(c);
     from.addConnection(c);
     to.addConnection(c);
-    this.init_();
     return c;
   };
 
@@ -225,26 +217,26 @@ var Network = function() {
 
   // learn recursively, starting from input
   this.learn_ = function(epochs, gamma, trainSet) {
+    var evt = document.createEvent('Event');
     var len = trainSet.length;
-    this.currentError = 0;
     this.changeGamma(gamma);
-    // this.errorSet = [];
+    this.errorSet = [];
+    evt.initEvent('update', true, true);
 
     for (var i = epochs; i >= 0; i--) {
+      var error = 0;
       for (var j = 0; j < len; j++) {
         this.learningStep_(trainSet[j]);
-        // currentError += Math.pow(this.outputs[0].desired - this.outputs[0].out, 2);
+        error += Math.pow(this.outputs[0].desired - this.outputs[0].out, 2);
       }
-      // if (i % 5000 === 0) {
-      //   this.errorSet.push(error / (2 * len));
-      //   // console.log(i, error / 2);
-      // }
+      if (i % 5000 === 0) {
+        this.errorSet.push(error / (2 * len));
+        document.dispatchEvent(evt);
+        console.log(i, error / 2);
+      }
       trainSet = this.shuffle(trainSet);
     }
-    for (var j = 0; j < len; j++) {
-      this.currentError += Math.pow(this.outputs[0].desired - this.outputs[0].out, 2);
-    }
-    return this.currentError;
+    return this.errorSet;
   };
 
   // test network by layers

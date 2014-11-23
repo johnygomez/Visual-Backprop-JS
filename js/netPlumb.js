@@ -33,53 +33,36 @@ jsPlumb.ready(function() {
   jsPlumb.bind('connection', function(info) {
     var source = $('#' + info.sourceId).data('id');
     var target = $('#' + info.targetId).data('id');
-    var weight = info.connection.getParameter('weight') || 0.0;
-    worker.postMessage({
-      cmd: 'connect',
-      from: source,
-      to: target,
-      weight: info.connection.getParameter('weight') || null
-    });
+    var netConnection = net.connect(source, target);
+    var weight = netConnection.weight.toFixed(5);
     info.connection.addOverlay(["Label", {
       width: 10,
       height: 10,
       id: "label",
       label: weight
     }]);
+    init();
   });
   jsPlumb.bind('connectionDetached', function(info) {
     var source = $('#' + info.sourceId).data('id');
     var target = $('#' + info.targetId).data('id');
-    worker.postMessage({
-      cmd: 'disconnect',
-      from: source,
-      to: target
-    });
-    // net.removeConnection(source, target);
+    net.removeConnection(source, target);
+    init();
   });
   jsPlumb.bind('connectionMoved', function(info) {
     var source = $('#' + info.originalSourceId).data('id');
     var target = $('#' + info.originalTargetId).data('id');
-    worker.postMessage({
-      cmd: 'disconnect',
-      from: source,
-      to: target
-    });
+    net.removeConnection(source, target);
     var newSource = $('#' + info.newSourceId).data('id');
     var newTarget = $('#' + info.newTargetId).data('id');
-    worker.postMessage({
-      cmd: 'connect',
-      from: newSource,
-      to: newTarget
-    });
+    net.connect(newSource, newTarget);
+    init();
   });
   $('#networkContainer').dblclick(function(e) {
-    worker.postMessage({
-      cmd: 'add',
-      id: id
-    });
+    var neuron = net.addNeuron(id);
     createNeuron(id, e.pageX, e.pageY);
     id++;
+    init();
   });
 });
 
@@ -95,9 +78,13 @@ var createNeuron = function(id, x, y) {
     y: y
   });
 
+  var neuron = net.getNeuron(id);
+  var inp = neuron.inp;
+  var out = neuron.out;
+
   // create inner nodes for in/out and connections
-  var inputNode = $('<div>').addClass('inputNode').text('In:' + 0.0);
-  var outNode = $('<div>').addClass('outputNode').text('Out:' + 0.0);
+  var inputNode = $('<div>').addClass('inputNode').text('In:' + inp);
+  var outNode = $('<div>').addClass('outputNode').text('Out:' + out);
   var title = $('<div>').addClass('title');
   var connect = $('<div>').addClass('connect').append('<i class="fa fa-plus-circle fa-2x"></i>');
   newState.css({
@@ -121,14 +108,13 @@ var createNeuron = function(id, x, y) {
   // make deattachable
   newState.dblclick(function(e) {
     var id = $(this).data('id');
-    worker.postMessage({
-      cmd: 'remove',
-      id: id
-    });
+    net.removeNeuron(id);
     jsPlumb.detachAllConnections($(this));
     $(this).remove();
     e.stopPropagation();
+    init();
   });
+  init();
 };
 // Exports network as json object
 var save = function() {
@@ -148,22 +134,17 @@ var save = function() {
   $.each(jsPlumb.getConnections(), function(idx, connection) {
     var sourceId = parseInt($('#' + connection.sourceId).data('id'));
     var targetId = parseInt($('#' + connection.targetId).data('id'));
-    var conn = _net.connections.filter(function(conn) {
-      if (conn.from === sourceId && conn.to === targetId) {
-        return true;
-      }
-    })[0];
     connections.push({
       connectionId: connection.id,
       sourceId: sourceId,
       targetId: targetId,
-      weight: conn.weight
+      weight: net.getConnection(sourceId, targetId).weight
     });
   });
 
   // construct js object to store from all parts
   var plumb = {
-    network: _net,
+    network: net,
     items: blocks,
     connections: connections
   };
@@ -195,24 +176,21 @@ var load = function() {
     var indexes = loadedData.items.map(function(item) {
       return item.id;
     });
+    var neurons = {};
+    loadedData.network.network_.forEach(function(neuron) {
+      neurons[neuron.id] = neuron.biasWeight;
+    });
     id = Math.max.apply(Math, indexes);
     id++;
 
-    // net = new Network();
-    // net.errorSet = loadedData.network.errorSet;
+    net = new Network();
+    net.errorSet = loadedData.network.errorSet;
 
     if (loadedData.items) {
       loadedData.items.forEach(function(node) {
-        worker.postMessage({
-          cmd: 'add',
-          id: node.id
-        });
-        worker.postMessage({
-          cmd: 'change',
-          id: node.id,
-          bias: loadedData.network.neurons[node.id][2]
-        });
+        neuron = net.addNeuron(node.id);
         createNeuron(node.id, node.x, node.y);
+        neuron.biasWeight = neurons[node.id];
       });
     }
 
@@ -222,11 +200,10 @@ var load = function() {
         var targetId = parseInt(connection.targetId);
         jsPlumb.connect({
           source: 'neuron' + sourceId,
-          target: 'neuron' + targetId,
-          parameters: {
-            weight: connection.weight
-          }
+          target: 'neuron' + targetId
         });
+        var newConn = net.connect(sourceId, targetId);
+        newConn.weight = connection.weight;
       })
     }
   }
