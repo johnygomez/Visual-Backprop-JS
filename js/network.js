@@ -16,7 +16,9 @@ worker.onmessage = function(evt) {
       resetCanvas();
       drawResult();
       drawError(evt.data.errorSet);
-      $("#learnLogo").removeAttr('class').addClass('fa fa-check')
+      $("#learnLogo").removeAttr('class').addClass('fa fa-check');
+      $("#learnBtn").removeAttr('disabled');
+      $("#runBtn").removeAttr('disabled');
     } else if (evt.data.cmd === 'result') {
       drawPoint(evt.data.result[0], evt.data.result[1], evt.data.result[2]);
     }
@@ -56,6 +58,8 @@ var learn = function() {
     refreshRate: $('#refreshRate').val()
   })
   $("#learnLogo").removeAttr('class').addClass('fa fa-spinner fa-spin')
+  $("#learnBtn").attr('disabled', true);;
+  $("#runBtn").attr('disabled', true);;
 };
 
 // run network once with inputs from form
