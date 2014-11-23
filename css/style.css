@@ -1,0 +1,62 @@
+  ._jsPlumb_connector { z-index:3; }
+  ._jsPlumb_endpoint { z-index:5; }
+  ._jsPlumb_overlay { z-index:6; }
+  .item {
+    position: absolute !important;
+    border-radius: 15px;
+    background-color: #ddddff;
+    z-index: 4;
+  }
+  #networkContainer {
+    position: relative !important;
+    border: 1px solid gray;
+    height: 50%;
+    margin-bottom: 1em;
+    overflow: hidden;
+    resize: vertical;
+  }
+  #errorChart {
+    width: 100%;
+    margin: 0;
+    height: 20em;
+    margin: 10px;
+  }
+  ._jsPlumb_overlay {
+    background-color: rgba(255,255,255,0.75);
+    border: 1px solid #ccc;
+  }
+  .controls {
+    position: absolute;
+    bottom: 0.5em;
+    right: 0.5em;
+  }
+  .title {
+    height: 3em !important;
+    cursor: move;
+    display: block;
+    padding: 0.5em !important;
+  }
+  .connect {
+    position: absolute !important;
+    bottom: -1em !important;
+    right: -1em !important;
+    width: auto;
+    height: auto;
+    color:green;
+    cursor: pointer;
+  }
+  .inputNode {
+    float: left;
+    height: 100%;
+    border-right: 1px #ccc solid;
+    width: 6em;
+    overflow:hidden;
+    resize: none;
+  }
+  .outputNode {
+    float: right;
+    height: 100%;
+    width: 6em;
+    overflow:hidden;
+    resize: none;
+  }

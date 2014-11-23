@@ -1,0 +1,86 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <script type="text/javascript" src="lib/ann.js"></script>
+  <script type="text/javascript" src="lib/cycle.js"></script>
+  <script type="text/javascript" src="lib/jquery.js"></script>
+  <script type="text/javascript" src="lib/jquery-ui.js"></script>
+  <script type="text/javascript" src="lib/jquery.ui.touch-punch.min.js"></script>
+  <script type="text/javascript" src="lib/jquery.jsPlumb-1.7.0.js"></script>
+  <script type="text/javascript" src="lib/Chart.min.js"></script>
+  <script type="text/javascript" src="./js/network.js"></script>
+  <script type="text/javascript" src="./js/netPlumb.js"></script>
+
+  <link href="./css/bootstrap.min.css" rel="stylesheet">
+  <link href="./css/font-awesome.min.css" rel="stylesheet">
+  <link href="./css/style.css" rel="stylesheet">
+
+  <title>Neural Network</title>
+</head>  
+
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-12" id="networkContainer">
+        <div class="controls">
+          <p class="help-block">Double click to add/remove neuron</p>
+          <button onclick="learn();" id="learnBtn" class="btn btn-info"><i class="fa fa-book"></i> Learn</button>
+          <button onclick="run();" id="runBtn" class="btn btn-success"><i class="fa fa-play"></i> Draw</button>
+          <button onclick="save();" id="runBtn" class="btn btn-primary"><i class="fa fa-download"></i> Save</button>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="trainSetFile">Training Set</label>
+              <input type="file" id="trainSetFile">
+              <p class="help-block">In .pat format</p>
+            </div>
+            <button onclick="readFile();" class="btn btn-primary">Upload</button>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="netFile">Network file</label>
+              <input type="file" id="netFile">
+              <p class="help-block">In JSON format</p>
+            </div>
+            <button onclick="load();" class="btn btn-primary">Load Network</button>
+          </div>
+        </div>
+        <div class="row">
+          <canvas id="errorChart"></canvas>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-horizontal">
+          <div class="form-group">
+            <label for="epochs" class="col-md-3 control-label">Number of learn cycles</label>
+            <input type="text" id="epochs" value="10000">
+          </div>
+          <div class="form-group">
+            <label for="gamma" class="col-md-3 control-label">Learn rate</label>
+            <input type="text" id="gamma" value="0.1">
+          </div>
+          <div class="form-group">
+            <label for="gamma" class="col-md-3 control-label">Refresh every # epochs</label>
+            <input type="text" id="refreshRate" value="1000">
+          </div>
+        </div>
+        <canvas id="uploadedBox" width="100" height="100" style="border:1px solid #c3c3c3;">
+          Your browser does not support the HTML5 canvas tag.
+        </canvas>
+        <canvas id="resultBox" width="100" height="100" style="border:1px solid #c3c3c3;">
+          Your browser does not support the HTML5 canvas tag.
+        </canvas>
+        <div id="inputData">
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
