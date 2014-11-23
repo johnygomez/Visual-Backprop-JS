@@ -1,8 +1,7 @@
 ///////////////////////////
 /// Johny Gomez (C) 2014///
 ///////////////////////////
-var net = new Network();
-var _net = null;
+var net = null;
 var ctx = null;
 var resultBox = null;
 var worker = new Worker('js/netAsync.js');
@@ -10,13 +9,14 @@ worker.postMessage = worker.webkitPostMessage || worker.postMessage;
 worker.onmessage = function(evt) {
   if (typeof(evt.data.cmd) !== undefined) {
     if (evt.data.cmd === 'update') {
-      _net = evt.data.net;
+      net = evt.data.net;
       init();
       updateUI();
     } else if (evt.data.cmd === 'learned') {
       resetCanvas();
       drawResult();
       drawError(evt.data.errorSet);
+      $("#learnLogo").removeAttr('class').addClass('fa fa-check')
     } else if (evt.data.cmd === 'result') {
       drawPoint(evt.data.result[0], evt.data.result[1], evt.data.result[2]);
     }
@@ -33,7 +33,7 @@ var trainSet = [
 // Initialize network
 var init = function() {
   var inputData = $('#inputData');
-  var inputsLength = _net.inputs.length;
+  var inputsLength = net.inputs.length;
   inputData.empty();
   // for each input generate input box to enter value
   for (var i = 1; i <= inputsLength; i++) {
@@ -55,9 +55,7 @@ var learn = function() {
     trainSet: trainSet,
     refreshRate: $('#refreshRate').val()
   })
-
-  // updateUI();
-  // drawResult();
+  $("#learnLogo").removeAttr('class').addClass('fa fa-spinner fa-spin')
 };
 
 // run network once with inputs from form
@@ -87,12 +85,12 @@ var setInputs = function() {
 
 // Refreshes UI
 var updateUI = function() {
-  if (_net === null) {
+  if (net === null) {
     return;
   }
   //drawError();
   $('.item').each(function() {
-    var neuron = _net.neurons[$(this).data('id')];
+    var neuron = net.neurons[$(this).data('id')];
     if (typeof neuron === 'undefined') return false;
     var inp = parseFloat(neuron[0]) || 0.0;
     var out = parseFloat(neuron[1]) || 0.0;
@@ -102,8 +100,7 @@ var updateUI = function() {
   $.each(jsPlumb.getConnections(), function(idx, connection) {
     var sourceId = parseInt($('#' + connection.sourceId).data('id'));
     var targetId = parseInt($('#' + connection.targetId).data('id'));
-    // var weight = net.getConnection(sourceId, targetId).weight.toFixed(5);
-    var conn = _net.connections.filter(function(conn) {
+    var conn = net.connections.filter(function(conn) {
       if (conn.from === sourceId && conn.to === targetId) {
         return true;
       }
@@ -159,7 +156,7 @@ var resetCanvas = function() {
 };
 
 var drawPoint = function(x, y, alpha) {
-  if (ctx !== null && _net !== null) {
+  if (ctx !== null && net !== null) {
     // denormalize
     var x = Math.round(x * 100);
     var y = Math.round(y * 100);

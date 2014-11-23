@@ -148,7 +148,7 @@ var save = function() {
   $.each(jsPlumb.getConnections(), function(idx, connection) {
     var sourceId = parseInt($('#' + connection.sourceId).data('id'));
     var targetId = parseInt($('#' + connection.targetId).data('id'));
-    var conn = _net.connections.filter(function(conn) {
+    var conn = net.connections.filter(function(conn) {
       if (conn.from === sourceId && conn.to === targetId) {
         return true;
       }
@@ -163,7 +163,7 @@ var save = function() {
 
   // construct js object to store from all parts
   var plumb = {
-    network: _net,
+    network: net,
     items: blocks,
     connections: connections
   };
